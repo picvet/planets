@@ -64,7 +64,7 @@ class StarShip(BaseModel):
     name: Mapped[str] = mapped_column(String, nullable=False)
     model: Mapped[str] = mapped_column(String, nullable=False)
 
-    planet_id: Mapped[big_int] = mapped_column(ForeignKey="planet.planet_id", nullable=False)
+    planet_id: Mapped[big_int] = mapped_column(ForeignKey("planet.planet_id"), nullable=False)
 
     r_planet: Mapped["Planet"] = relationship(back_populates="r_starships")
     r_manifests: Mapped[list["Manifest"]] = relationship(back_populates="r_starship", cascade="all, delete-orphan")
@@ -86,9 +86,9 @@ class Manifest(BaseModel):
 
     manifest_id: Mapped[big_int_pk]
 
-    starship_id: Mapped[big_int] = mapped_column(ForeignKey="starship.starship_id", nullable=False)
+    starship_id: Mapped[big_int] = mapped_column(ForeignKey("starship.starship_id"), nullable=False)
 
-    cargo_type_id: Mapped[big_int] = mapped_column(ForeignKey("cargo_type.cargo_type_id", nullable=False))
+    cargo_type_id: Mapped[big_int] = mapped_column(ForeignKey("cargo_type.cargo_type_id"), nullable=False)
 
     quantity: Mapped[big_int] = mapped_column(nullable=False, default=0)
 
