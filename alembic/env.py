@@ -14,18 +14,26 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-from resources.database.models import BaseModel
+from resources.database.models import base_metadata
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = BaseModel.metadata
+target_metadata = base_metadata
+current_tenant = base_metadata.schema
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+
+def include_name(name, type_, parent_names):
+    if type_ == "schema":
+        return name in [current_tenant]
+    else:
+        return True
 
 
 def run_migrations_offline() -> None:
@@ -46,6 +54,9 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_schemas=True,
+        version_table_schema=current_tenant,
+        include_name=include_name,
     )
 
     with context.begin_transaction():
