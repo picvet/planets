@@ -13,22 +13,26 @@ from src.strings import en_za as strings
 
 class PlanetsService(PlanetAdminBase):
 
-    async def create_sector(self, create_sector_request: "CreateSectorRequest") -> "CreateSectorResponse":
-        """Create a new sector to the database."""
-        async with Session() as session:
-            if not create_sector_request.sector_name:
-                return CreateSectorResponse(
-                    message=ResponseMessage(
-                        status_code=StatusCode.VALIDATION_ERROR,
-                        error_fields={"sector_name": strings.validation_error_required_field},
+    async def create_sector(self, create_sector_request: CreateSectorRequest) -> CreateSectorResponse:
+        try:
+            async with Session() as session:
+                if not create_sector_request.sector_name:
+                    return CreateSectorResponse(
+                        message=ResponseMessage(
+                            status_code=StatusCode.VALIDATION_ERROR,
+                            error_fields={"sector_name": strings.validation_error_required_field},
+                        )
                     )
+
+                sector = await create_sector(session, create_sector_request.sector_name)
+
+                return CreateSectorResponse(
+                    message=ResponseMessage(status_code=StatusCode.SUCCESS),
+                    sector_id=sector.sector_id,
                 )
 
-            # call db
-            sector = await create_sector(session, create_sector_request.sector_name)
-            return CreateSectorResponse(
-                message=ResponseMessage(
-                    status_code=StatusCode.SUCCESS,
-                ),
-                sector_id=sector.sector_id,
-            )
+        except Exception:
+            import traceback
+
+            traceback.print_exc()
+            raise

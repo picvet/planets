@@ -8,6 +8,6 @@ async def create_sector(
 ) -> models.Sector:
     sector = models.Sector(name=sector_name)
     session.add(sector)
+    await session.flush()
     await session.commit()
-    await session.refresh(sector)
     return sector
