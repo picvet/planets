@@ -9,3 +9,6 @@ betterproto[compiler]==2.0.0b7
 # development
 grpcio==1.78.0
 grpcio-tools==1.78.0
+
+# environment
+python-dotenv==1.2.1
