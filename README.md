@@ -52,3 +52,11 @@ Once the database is ready, return to your project root and run your initial mig
 ```bash
 alembic upgrade head
 ```
+
+## 🧬 Generate Protobuf Definitions
+
+Run the following command from the project root to generate Python dataclasses and gRPC stubs using betterproto:
+
+```bash
+python -m grpc_tools.protoc -I proto --python_betterproto_out=src/generated proto/planet.proto
+```
