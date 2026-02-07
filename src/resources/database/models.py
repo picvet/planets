@@ -35,17 +35,27 @@ class BaseModel(DefaultMixin, ReprMixin, DeclarativeBase):
     metadata = base_metadata
 
 
+class Sector(BaseModel):
+    __tablename__ = "sector"
+
+    sector_id: Mapped[big_int_pk]
+    name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+
+    r_planets: Mapped[list["Planet"]] = relationship(back_populates="r_sector")
+
+
 class Planet(BaseModel):
     __tablename__ = "planet"
 
     planet_id: Mapped[big_int_pk]
     name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
-    sector: Mapped[str] = mapped_column(String, nullable=False)
+    sector_id: Mapped[big_int] = mapped_column(ForeignKey("sector.sector_id"), nullable=False)
 
     scarce_cargo_type_id: Mapped[big_int | None] = mapped_column(ForeignKey("cargo_type.cargo_type_id"), nullable=True)
 
     r_starships: Mapped[list["StarShip"]] = relationship(back_populates="r_planet")
     r_scarce_cargo_type: Mapped["CargoType"] = relationship()
+    r_sector: Mapped["Sector"] = relationship(back_populates="r_planets")
 
 
 class CargoType(BaseModel):
