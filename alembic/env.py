@@ -30,7 +30,7 @@ current_tenant = base_metadata.schema
 
 
 def include_name(name, type_, parent_names):
-    if type_ == "schema":
+    if type_ == "schema" or type_ == "table":
         return name in [current_tenant]
     else:
         return True

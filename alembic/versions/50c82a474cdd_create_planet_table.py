@@ -1,8 +1,8 @@
 """create planet table
 
-Revision ID: bf909f3044e6
+Revision ID: 50c82a474cdd
 Revises: 
-Create Date: 2026-02-07 02:02:06.902086
+Create Date: 2026-02-07 09:42:44.932491
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'bf909f3044e6'
+revision: str = '50c82a474cdd'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -29,13 +29,22 @@ def upgrade() -> None:
     sa.UniqueConstraint('name', name=op.f('uq_cargo_type_name')),
     schema='planet'
     )
+    op.create_table('sector',
+    sa.Column('sector_id', sa.BigInteger(), nullable=False),
+    sa.Column('name', sa.String(), nullable=False),
+    sa.Column('date_created', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.PrimaryKeyConstraint('sector_id', name=op.f('pk_sector')),
+    sa.UniqueConstraint('name', name=op.f('uq_sector_name')),
+    schema='planet'
+    )
     op.create_table('planet',
     sa.Column('planet_id', sa.BigInteger(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
-    sa.Column('sector', sa.String(), nullable=False),
+    sa.Column('sector_id', sa.BigInteger(), nullable=False),
     sa.Column('scarce_cargo_type_id', sa.BigInteger(), nullable=True),
     sa.Column('date_created', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['scarce_cargo_type_id'], ['planet.cargo_type.cargo_type_id'], name=op.f('fk_planet_scarce_cargo_type_id_cargo_type')),
+    sa.ForeignKeyConstraint(['sector_id'], ['planet.sector.sector_id'], name=op.f('fk_planet_sector_id_sector')),
     sa.PrimaryKeyConstraint('planet_id', name=op.f('pk_planet')),
     sa.UniqueConstraint('name', name=op.f('uq_planet_name')),
     schema='planet'
@@ -72,5 +81,6 @@ def downgrade() -> None:
     op.drop_table('manifest', schema='planet')
     op.drop_table('starship', schema='planet')
     op.drop_table('planet', schema='planet')
+    op.drop_table('sector', schema='planet')
     op.drop_table('cargo_type', schema='planet')
     # ### end Alembic commands ###
