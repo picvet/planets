@@ -9,7 +9,7 @@ import src.resources.database.models as models
 async def create_planet_db(
     session: AsyncSession,
     planet_name: str,
-    sector_id: str,
+    sector_id: int,
     scarce_cargo_id: int = None,
 ) -> Optional[models.Planet]:
 
