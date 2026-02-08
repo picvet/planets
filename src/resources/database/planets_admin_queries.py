@@ -9,19 +9,15 @@ import src.resources.database.models as models
 async def create_planet_db(
     session: AsyncSession,
     planet_name: str,
-    sector_name: str,
-    scarce_cargo_name: str = None,
+    sector_id: str,
+    scarce_cargo_id: int = None,
 ) -> Optional[models.Planet]:
 
     select_stmt = select(
         literal(planet_name),
         models.Sector.sector_id,
-        select(models.CargoType.cargo_type_id)
-        .where(
-            models.CargoType.name == scarce_cargo_name,
-        )
-        .scalar_subquery(),
-    ).where(models.Sector.name == sector_name)
+        select(models.CargoType.cargo_type_id).where(models.CargoType.cargo_type_id == scarce_cargo_id).scalar_subquery(),
+    ).where(models.Sector.sector_id == sector_id)
 
     insert_stmt = (
         insert(models.Planet)

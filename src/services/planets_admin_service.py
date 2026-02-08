@@ -44,8 +44,8 @@ class PlanetsService(PlanetAdminBase):
 
             if not create_planet_request.planet_name:
                 errors["planet_name"] = strings.validation_error_required_field
-            if not create_planet_request.sector_name:
-                errors["sector_name"] = strings.validation_error_required_field
+            if not create_planet_request.sector_id:
+                errors["sector_id"] = strings.validation_error_required_field
 
             if errors:
                 return CreatePlanetResponse(
@@ -56,10 +56,10 @@ class PlanetsService(PlanetAdminBase):
                 )
 
             planet = await create_planet_db(
-                session,
-                create_planet_request.planet_name,
-                create_planet_request.sector_name,
-                create_planet_request.scarce_cargo_name,
+                session=session,
+                planet_name=create_planet_request.planet_name,
+                sector_id=create_planet_request.sector_id,
+                scarce_cargo_id=create_planet_request.scarce_cargo_id,
             )
             await session.commit()
 

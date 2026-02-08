@@ -30,10 +30,10 @@ message ResponseMessage {
 
 message  CreatePlanetRequest {
  string planet_name = 1;
- string sector_name = 2;
+ int64 sector_id = 2;
 
  // optional scarce cargo, as a planet may be stable to not have any scarcity
- optional string scarce_cargo_name = 3;
+ optional int64 scarce_cargo_id = 3;
 }
 
 message  CreatePlanetResponse {

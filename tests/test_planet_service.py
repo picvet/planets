@@ -45,7 +45,7 @@ async def test_create_planet(planets_service):
         create_planet_success_response = await stub.create_planet(
             CreatePlanetRequest(
                 planet_name=planet_1,
-                sector_name=sector_name,
+                sector_id=create_sector_success.sector_id,
             ),
         )
         assert create_planet_success_response.message.status_code == StatusCode.SUCCESS
@@ -53,7 +53,7 @@ async def test_create_planet(planets_service):
         create_planet_response_error = await stub.create_planet(
             CreatePlanetRequest(
                 planet_name=planet_1,
-                sector_name="Not found",
+                sector_id=999,
             ),
         )
         assert create_planet_response_error.message.status_code == StatusCode.INTERNAL_ERROR
@@ -61,8 +61,8 @@ async def test_create_planet(planets_service):
         create_planet_success_response_1 = await stub.create_planet(
             CreatePlanetRequest(
                 planet_name=planet_2,
-                sector_name=sector_name,
-                scarce_cargo_name=cargo_name,
+                sector_id=create_sector_success.sector_id,
+                scarce_cargo_id=create_cargo_type_success.cargo_type_id,
             ),
         )
         assert create_planet_success_response_1.message.status_code == StatusCode.SUCCESS
