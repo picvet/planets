@@ -6,6 +6,8 @@ service PlanetAdmin {
   rpc CreatePlanet (CreatePlanetRequest) returns (CreatePlanetResponse);
 
   rpc CreateSector (CreateSectorRequest) returns (CreateSectorResponse);
+
+  rpc CreateCargoType (CreateCargoTypeRequest) returns (CreateCargoTypeResponse);
 }
 
 enum StatusCode {
@@ -44,4 +46,12 @@ message CreateSectorRequest {
 message CreateSectorResponse {
   ResponseMessage message = 1;
   int64 sector_id = 2;
+}
+
+message CreateCargoTypeRequest {
+  string cargo_name = 1;
+}
+message CreateCargoTypeResponse {
+  ResponseMessage message = 1;
+  int64 cargo_type_id = 2;
 }

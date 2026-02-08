@@ -66,6 +66,17 @@ class CreateSectorResponse(betterproto.Message):
     sector_id: int = betterproto.int64_field(2)
 
 
+@dataclass(eq=False, repr=False)
+class CreateCargoTypeRequest(betterproto.Message):
+    cargo_name: str = betterproto.string_field(1)
+
+
+@dataclass(eq=False, repr=False)
+class CreateCargoTypeResponse(betterproto.Message):
+    message: "ResponseMessage" = betterproto.message_field(1)
+    cargo_type_id: int = betterproto.int64_field(2)
+
+
 class PlanetAdminStub(betterproto.ServiceStub):
     async def create_planet(
         self,
@@ -101,6 +112,23 @@ class PlanetAdminStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
+    async def create_cargo_type(
+        self,
+        create_cargo_type_request: "CreateCargoTypeRequest",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "CreateCargoTypeResponse":
+        return await self._unary_unary(
+            "/co.za.planet.PlanetAdmin/CreateCargoType",
+            create_cargo_type_request,
+            CreateCargoTypeResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
 
 class PlanetAdminBase(ServiceBase):
 
@@ -112,6 +140,11 @@ class PlanetAdminBase(ServiceBase):
     async def create_sector(
         self, create_sector_request: "CreateSectorRequest"
     ) -> "CreateSectorResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def create_cargo_type(
+        self, create_cargo_type_request: "CreateCargoTypeRequest"
+    ) -> "CreateCargoTypeResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_create_planet(
@@ -128,6 +161,14 @@ class PlanetAdminBase(ServiceBase):
         response = await self.create_sector(request)
         await stream.send_message(response)
 
+    async def __rpc_create_cargo_type(
+        self,
+        stream: "grpclib.server.Stream[CreateCargoTypeRequest, CreateCargoTypeResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.create_cargo_type(request)
+        await stream.send_message(response)
+
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
         return {
             "/co.za.planet.PlanetAdmin/CreatePlanet": grpclib.const.Handler(
@@ -141,5 +182,11 @@ class PlanetAdminBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 CreateSectorRequest,
                 CreateSectorResponse,
+            ),
+            "/co.za.planet.PlanetAdmin/CreateCargoType": grpclib.const.Handler(
+                self.__rpc_create_cargo_type,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                CreateCargoTypeRequest,
+                CreateCargoTypeResponse,
             ),
         }
