@@ -11,9 +11,11 @@ from src.generated.co.za.planet import (
     CreateCargoTypeRequest,
     CreateStarshipResponse,
     CreateStarshipRequest,
+    CreateManifestResponse,
+    CreateManifestRequest,
 )
 from src.resources.database.config import Session
-from src.resources.database.planets_admin_queries import create_planet_db, create_starship_db
+from src.resources.database.planets_admin_queries import create_planet_db, create_starship_db, create_manifest_db
 from src.strings import en_za as strings
 
 
@@ -121,4 +123,45 @@ class PlanetsService(PlanetAdminBase):
             return CreateStarshipResponse(
                 message=ResponseMessage(status_code=StatusCode.SUCCESS),
                 starship_id=starship.starship_id,
+            )
+
+    async def create_manifest(self, create_manifest_request: "CreateManifestRequest") -> "CreateManifestResponse":
+        async with Session() as session:
+            errors = {}
+
+            if not create_manifest_request.cargo_type_id:
+                errors["cargo_type_id"] = strings.validation_error_required_field
+            if not create_manifest_request.quantity:
+                errors["quantity"] = strings.validation_error_required_field
+            if not create_manifest_request.starship_id:
+                errors["starship_id"] = strings.validation_error_required_field
+
+            if errors:
+                return CreateManifestResponse(
+                    message=ResponseMessage(
+                        status_code=StatusCode.VALIDATION_ERROR,
+                        error_fields=errors,
+                    )
+                )
+
+            manifest = await create_manifest_db(
+                session=session,
+                quantity=create_manifest_request.quantity,
+                starship_id=create_manifest_request.starship_id,
+                cargo_type_id=create_manifest_request.cargo_type_id,
+            )
+
+            if not manifest:
+                return CreateManifestResponse(
+                    message=ResponseMessage(
+                        status_code=StatusCode.NOT_FOUND,
+                        status_message=strings.validation_error_invalid_starship_or_cargo_type,
+                    )
+                )
+
+            await session.commit()
+
+            return CreateManifestResponse(
+                message=ResponseMessage(status_code=StatusCode.SUCCESS),
+                manifest_id=manifest.manifest_id,
             )

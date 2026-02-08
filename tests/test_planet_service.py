@@ -8,6 +8,7 @@ from src.generated.co.za.planet import (
     CreatePlanetRequest,
     CreateCargoTypeRequest,
     CreateStarshipRequest,
+    CreateManifestRequest,
 )
 from src.strings import en_za as strings
 
@@ -88,3 +89,16 @@ async def test_create_planet(planets_service):
             )
         )
         assert create_starship_success_response.message.status_code == StatusCode.SUCCESS
+
+        # manifest
+        create_empty_manifest_response = await stub.create_manifest(CreateManifestRequest())
+        assert create_empty_manifest_response.message.status_code == StatusCode.VALIDATION_ERROR
+
+        create_manifest_success_response = await stub.create_manifest(
+            CreateManifestRequest(
+                starship_id=create_starship_success_response.starship_id,
+                cargo_type_id=create_cargo_type_success.cargo_type_id,
+                quantity=5,
+            )
+        )
+        print(f"create manifest success: {create_manifest_success_response}")
