@@ -51,7 +51,10 @@ class Planet(BaseModel):
     name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     sector_id: Mapped[big_int] = mapped_column(ForeignKey("sector.sector_id"), nullable=False)
 
-    scarce_cargo_type_id: Mapped[big_int | None] = mapped_column(ForeignKey("cargo_type.cargo_type_id"), nullable=True)
+    scarce_cargo_type_id: Mapped[big_int | None] = mapped_column(
+        ForeignKey("cargo_type.cargo_type_id"),
+        nullable=True,
+    )
 
     r_starships: Mapped[list["StarShip"]] = relationship(back_populates="r_planet")
     r_scarce_cargo_type: Mapped["CargoType"] = relationship()
@@ -64,7 +67,10 @@ class CargoType(BaseModel):
     cargo_type_id: Mapped[big_int_pk]
     name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
 
-    r_manifests: Mapped[list["Manifest"]] = relationship(back_populates="r_cargo_type", cascade="all, delete-orphan")
+    r_manifests: Mapped[list["Manifest"]] = relationship(
+        back_populates="r_cargo_type",
+        cascade="all, delete-orphan",
+    )
 
 
 class StarShip(BaseModel):
@@ -77,7 +83,10 @@ class StarShip(BaseModel):
     planet_id: Mapped[big_int] = mapped_column(ForeignKey("planet.planet_id"), nullable=False)
 
     r_planet: Mapped["Planet"] = relationship(back_populates="r_starships")
-    r_manifests: Mapped[list["Manifest"]] = relationship(back_populates="r_starship", cascade="all, delete-orphan")
+    r_manifests: Mapped[list["Manifest"]] = relationship(
+        back_populates="r_starship",
+        cascade="all, delete-orphan",
+    )
 
 
 class Manifest(BaseModel):
