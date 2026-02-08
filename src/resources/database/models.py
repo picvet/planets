@@ -104,12 +104,10 @@ class Manifest(BaseModel):
     )
 
     manifest_id: Mapped[big_int_pk]
+    quantity: Mapped[big_int] = mapped_column(nullable=False, default=0)
 
     starship_id: Mapped[big_int] = mapped_column(ForeignKey("starship.starship_id"), nullable=False)
-
     cargo_type_id: Mapped[big_int] = mapped_column(ForeignKey("cargo_type.cargo_type_id"), nullable=False)
-
-    quantity: Mapped[big_int] = mapped_column(nullable=False, default=0)
 
     r_starship: Mapped["StarShip"] = relationship(back_populates="r_manifests")
     r_cargo_type: Mapped["CargoType"] = relationship(back_populates="r_manifests")
