@@ -36,7 +36,7 @@ async def create_starship_db(
     starship_name: str,
     starship_model: str,
     planet_id: int,
-) -> models.StarShip | None:
+) -> Optional[models.StarShip]:
     select_stmt = select(
         literal(starship_name),
         literal(starship_model),
