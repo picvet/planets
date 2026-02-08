@@ -8,6 +8,8 @@ service PlanetAdmin {
   rpc CreateSector (CreateSectorRequest) returns (CreateSectorResponse);
 
   rpc CreateCargoType (CreateCargoTypeRequest) returns (CreateCargoTypeResponse);
+
+  rpc CreateStarship (CreateStarshipRequest) returns (CreateStarshipResponse);
 }
 
 enum StatusCode {
@@ -54,4 +56,14 @@ message CreateCargoTypeRequest {
 message CreateCargoTypeResponse {
   ResponseMessage message = 1;
   int64 cargo_type_id = 2;
+}
+
+message CreateStarshipRequest {
+  string starship_name = 1;
+  string starship_model = 2;
+  int64 planet_id = 3;
+}
+message CreateStarshipResponse {
+  ResponseMessage message = 1;
+  int64 starship_id = 2;
 }
