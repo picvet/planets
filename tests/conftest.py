@@ -64,6 +64,6 @@ async def planets_service(db_setup):
     """
     Provides the service instance once the DB is ready.
     """
-    from src.services.planets import PlanetsService
+    from src.services.planets_admin_service import PlanetsService
 
     return PlanetsService()

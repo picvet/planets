@@ -3,7 +3,7 @@ syntax = "proto3";
 package co.za.planet;
 
 service PlanetAdmin {
-  rpc CreatePlanet (CreatePlanetRequest) returns (CreatePlanetRequestResponse);
+  rpc CreatePlanet (CreatePlanetRequest) returns (CreatePlanetResponse);
 
   rpc CreateSector (CreateSectorRequest) returns (CreateSectorResponse);
 }
@@ -32,7 +32,7 @@ message  CreatePlanetRequest {
  optional string scarce_cargo_name = 3;
 }
 
-message  CreatePlanetRequestResponse {
+message  CreatePlanetResponse {
   ResponseMessage message = 1;
   int64 planet_id = 2;
 }

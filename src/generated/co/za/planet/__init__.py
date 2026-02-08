@@ -50,7 +50,7 @@ class CreatePlanetRequest(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
-class CreatePlanetRequestResponse(betterproto.Message):
+class CreatePlanetResponse(betterproto.Message):
     message: "ResponseMessage" = betterproto.message_field(1)
     planet_id: int = betterproto.int64_field(2)
 
@@ -74,11 +74,11 @@ class PlanetAdminStub(betterproto.ServiceStub):
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
         metadata: Optional["MetadataLike"] = None
-    ) -> "CreatePlanetRequestResponse":
+    ) -> "CreatePlanetResponse":
         return await self._unary_unary(
             "/co.za.planet.PlanetAdmin/CreatePlanet",
             create_planet_request,
-            CreatePlanetRequestResponse,
+            CreatePlanetResponse,
             timeout=timeout,
             deadline=deadline,
             metadata=metadata,
@@ -106,7 +106,7 @@ class PlanetAdminBase(ServiceBase):
 
     async def create_planet(
         self, create_planet_request: "CreatePlanetRequest"
-    ) -> "CreatePlanetRequestResponse":
+    ) -> "CreatePlanetResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def create_sector(
@@ -115,8 +115,7 @@ class PlanetAdminBase(ServiceBase):
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_create_planet(
-        self,
-        stream: "grpclib.server.Stream[CreatePlanetRequest, CreatePlanetRequestResponse]",
+        self, stream: "grpclib.server.Stream[CreatePlanetRequest, CreatePlanetResponse]"
     ) -> None:
         request = await stream.recv_message()
         response = await self.create_planet(request)
@@ -135,7 +134,7 @@ class PlanetAdminBase(ServiceBase):
                 self.__rpc_create_planet,
                 grpclib.const.Cardinality.UNARY_UNARY,
                 CreatePlanetRequest,
-                CreatePlanetRequestResponse,
+                CreatePlanetResponse,
             ),
             "/co.za.planet.PlanetAdmin/CreateSector": grpclib.const.Handler(
                 self.__rpc_create_sector,
