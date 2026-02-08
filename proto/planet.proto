@@ -10,6 +10,8 @@ service PlanetAdmin {
   rpc CreateCargoType (CreateCargoTypeRequest) returns (CreateCargoTypeResponse);
 
   rpc CreateStarship (CreateStarshipRequest) returns (CreateStarshipResponse);
+
+  rpc CreateManifest (CreateManifestRequest) returns (CreateManifestResponse);
 }
 
 enum StatusCode {
@@ -66,4 +68,15 @@ message CreateStarshipRequest {
 message CreateStarshipResponse {
   ResponseMessage message = 1;
   int64 starship_id = 2;
+}
+
+message CreateManifestRequest {
+  int64 quantity = 1;
+  int64 starship_id = 2;
+  int64 cargo_type_id = 3;
+}
+
+message CreateManifestResponse {
+  ResponseMessage message = 1;
+  int64 manifest_id = 2;
 }

@@ -90,6 +90,19 @@ class CreateStarshipResponse(betterproto.Message):
     starship_id: int = betterproto.int64_field(2)
 
 
+@dataclass(eq=False, repr=False)
+class CreateManifestRequest(betterproto.Message):
+    quantity: int = betterproto.int64_field(1)
+    starship_id: int = betterproto.int64_field(2)
+    cargo_type_id: int = betterproto.int64_field(3)
+
+
+@dataclass(eq=False, repr=False)
+class CreateManifestResponse(betterproto.Message):
+    message: "ResponseMessage" = betterproto.message_field(1)
+    manifest_id: int = betterproto.int64_field(2)
+
+
 class PlanetAdminStub(betterproto.ServiceStub):
     async def create_planet(
         self,
@@ -159,6 +172,23 @@ class PlanetAdminStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
+    async def create_manifest(
+        self,
+        create_manifest_request: "CreateManifestRequest",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "CreateManifestResponse":
+        return await self._unary_unary(
+            "/co.za.planet.PlanetAdmin/CreateManifest",
+            create_manifest_request,
+            CreateManifestResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
 
 class PlanetAdminBase(ServiceBase):
 
@@ -180,6 +210,11 @@ class PlanetAdminBase(ServiceBase):
     async def create_starship(
         self, create_starship_request: "CreateStarshipRequest"
     ) -> "CreateStarshipResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def create_manifest(
+        self, create_manifest_request: "CreateManifestRequest"
+    ) -> "CreateManifestResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_create_planet(
@@ -212,6 +247,14 @@ class PlanetAdminBase(ServiceBase):
         response = await self.create_starship(request)
         await stream.send_message(response)
 
+    async def __rpc_create_manifest(
+        self,
+        stream: "grpclib.server.Stream[CreateManifestRequest, CreateManifestResponse]",
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.create_manifest(request)
+        await stream.send_message(response)
+
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
         return {
             "/co.za.planet.PlanetAdmin/CreatePlanet": grpclib.const.Handler(
@@ -237,5 +280,11 @@ class PlanetAdminBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 CreateStarshipRequest,
                 CreateStarshipResponse,
+            ),
+            "/co.za.planet.PlanetAdmin/CreateManifest": grpclib.const.Handler(
+                self.__rpc_create_manifest,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                CreateManifestRequest,
+                CreateManifestResponse,
             ),
         }
