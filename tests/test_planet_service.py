@@ -63,7 +63,6 @@ async def test_create_planet(planets_service):
             CreatePlanetRequest(
                 planet_name=planet_2,
                 sector_id=create_sector_success.sector_id,
-                scarce_cargo_id=create_cargo_type_success.cargo_type_id,
             ),
         )
         assert create_planet_success_response_1.message.status_code == StatusCode.SUCCESS
