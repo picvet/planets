@@ -67,7 +67,6 @@ class PlanetsService(PlanetAdminBase):
                 session=session,
                 planet_name=create_planet_request.planet_name,
                 sector_id=create_planet_request.sector_id,
-                scarce_cargo_id=create_planet_request.scarce_cargo_id,
             )
 
             if not planet:
