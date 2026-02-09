@@ -86,9 +86,9 @@ async def create_starship_db(
     planet_id: int,
 ) -> Optional[models.StarShip]:
     select_stmt = select(
-        literal(starship_name),
-        literal(starship_model),
-        models.Planet.planet_id,
+        literal(starship_name).label("name"),
+        literal(starship_model).label("model"),
+        models.Planet.planet_id.label("planet_id"),
     ).where(models.Planet.planet_id == planet_id)
 
     insert_stmt = (
