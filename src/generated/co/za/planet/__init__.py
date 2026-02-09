@@ -43,10 +43,6 @@ class ResponseMessage(betterproto.Message):
 class CreatePlanetRequest(betterproto.Message):
     planet_name: str = betterproto.string_field(1)
     sector_id: int = betterproto.int64_field(2)
-    scarce_cargo_id: Optional[int] = betterproto.int64_field(3, optional=True)
-    """
-    optional scarce cargo, as a planet may be stable to not have any scarcity
-    """
 
 
 @dataclass(eq=False, repr=False)
