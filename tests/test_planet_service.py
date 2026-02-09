@@ -6,7 +6,7 @@ from src.generated.co.za.planet import (
     PlanetAdminStub,
     StatusCode,
     CreatePlanetRequest,
-    CreateCargoTypeRequest,
+    GetOrCreateCargoTypeRequest,
     CreateStarshipRequest,
     CreateManifestRequest,
 )
@@ -33,10 +33,10 @@ async def test_create_planet(planets_service):
         assert create_sector_success.message.status_code == StatusCode.SUCCESS
 
         # cargo type
-        create_empty_cargo_response = await stub.create_cargo_type(CreateCargoTypeRequest())
+        create_empty_cargo_response = await stub.get_or_create_cargo_type(GetOrCreateCargoTypeRequest())
         assert create_empty_cargo_response.message.status_code == StatusCode.VALIDATION_ERROR
 
-        create_cargo_type_success = await stub.create_cargo_type(CreateCargoTypeRequest(cargo_name=cargo_name))
+        create_cargo_type_success = await stub.get_or_create_cargo_type(GetOrCreateCargoTypeRequest(cargo_name=cargo_name))
         assert create_cargo_type_success.message.status_code == StatusCode.SUCCESS
 
         # planet

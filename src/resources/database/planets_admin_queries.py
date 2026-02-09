@@ -39,7 +39,7 @@ async def create_planet_db(
     return result
 
 
-async def create_sector_db(
+async def get_or_create_sector_db(
     session: AsyncSession,
     sector_name: str,
 ) -> models.Sector:
@@ -59,7 +59,7 @@ async def create_sector_db(
     return result.scalar_one()
 
 
-async def create_cargo_db(
+async def get_or_create_cargo_db(
     session: AsyncSession,
     cargo_name: str,
 ) -> models.CargoType:

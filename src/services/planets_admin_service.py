@@ -4,8 +4,8 @@ from src.generated.co.za.planet import (
     StatusCode,
     CreatePlanetRequest,
     CreatePlanetResponse,
-    CreateCargoTypeResponse,
-    CreateCargoTypeRequest,
+    GetOrCreateCargoTypeResponse,
+    GetOrCreateCargoTypeRequest,
     CreateStarshipResponse,
     CreateStarshipRequest,
     CreateManifestResponse,
@@ -18,8 +18,8 @@ from src.resources.database.planets_admin_queries import (
     create_planet_db,
     create_starship_db,
     create_manifest_db,
-    create_cargo_db,
-    create_sector_db,
+    get_or_create_cargo_db,
+    get_or_create_sector_db,
 )
 from src.strings import en_za as strings
 
@@ -36,7 +36,7 @@ class PlanetsService(PlanetAdminBase):
                     ),
                 )
 
-            sector = await create_sector_db(
+            sector = await get_or_create_sector_db(
                 session=session,
                 sector_name=create_sector_request.sector_name,
             )
@@ -78,25 +78,25 @@ class PlanetsService(PlanetAdminBase):
                 planet_id=planet.planet_id,
             )
 
-    async def create_cargo_type(
+    async def get_or_create_cargo_type(
         self,
-        create_cargo_type_request: "CreateCargoTypeRequest",
-    ) -> "CreateCargoTypeResponse":
+        create_cargo_type_request: "GetOrCreateCargoTypeRequest",
+    ) -> "GetOrCreateCargoTypeResponse":
         async with Session() as session:
             if not create_cargo_type_request.cargo_name:
-                return CreateCargoTypeResponse(
+                return GetOrCreateCargoTypeResponse(
                     message=ResponseMessage(
                         status_code=StatusCode.VALIDATION_ERROR,
                         error_fields={"cargo_name": strings.validation_error_required_field},
                     ),
                 )
 
-            cargo = await create_cargo_db(
+            cargo = await get_or_create_cargo_db(
                 session=session,
                 cargo_name=create_cargo_type_request.cargo_name,
             )
 
-            return CreateCargoTypeResponse(
+            return GetOrCreateCargoTypeResponse(
                 message=ResponseMessage(
                     status_code=StatusCode.SUCCESS,
                 ),

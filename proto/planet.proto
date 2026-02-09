@@ -7,7 +7,7 @@ service PlanetAdmin {
 
   rpc GetOrCreateSector (GetOrCreateSectorRequest) returns (GetOrCreateSectorResponse);
 
-  rpc CreateCargoType (CreateCargoTypeRequest) returns (CreateCargoTypeResponse);
+  rpc GetOrCreateCargoType (GetOrCreateCargoTypeRequest) returns (GetOrCreateCargoTypeResponse);
 
   rpc CreateStarship (CreateStarshipRequest) returns (CreateStarshipResponse);
 
@@ -51,10 +51,10 @@ message GetOrCreateSectorResponse {
   int64 sector_id = 2;
 }
 
-message CreateCargoTypeRequest {
+message GetOrCreateCargoTypeRequest {
   string cargo_name = 1;
 }
-message CreateCargoTypeResponse {
+message GetOrCreateCargoTypeResponse {
   ResponseMessage message = 1;
   int64 cargo_type_id = 2;
 }

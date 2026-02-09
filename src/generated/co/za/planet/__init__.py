@@ -67,12 +67,12 @@ class GetOrCreateSectorResponse(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
-class CreateCargoTypeRequest(betterproto.Message):
+class GetOrCreateCargoTypeRequest(betterproto.Message):
     cargo_name: str = betterproto.string_field(1)
 
 
 @dataclass(eq=False, repr=False)
-class CreateCargoTypeResponse(betterproto.Message):
+class GetOrCreateCargoTypeResponse(betterproto.Message):
     message: "ResponseMessage" = betterproto.message_field(1)
     cargo_type_id: int = betterproto.int64_field(2)
 
@@ -138,18 +138,18 @@ class PlanetAdminStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
-    async def create_cargo_type(
+    async def get_or_create_cargo_type(
         self,
-        create_cargo_type_request: "CreateCargoTypeRequest",
+        get_or_create_cargo_type_request: "GetOrCreateCargoTypeRequest",
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
         metadata: Optional["MetadataLike"] = None
-    ) -> "CreateCargoTypeResponse":
+    ) -> "GetOrCreateCargoTypeResponse":
         return await self._unary_unary(
-            "/co.za.planet.PlanetAdmin/CreateCargoType",
-            create_cargo_type_request,
-            CreateCargoTypeResponse,
+            "/co.za.planet.PlanetAdmin/GetOrCreateCargoType",
+            get_or_create_cargo_type_request,
+            GetOrCreateCargoTypeResponse,
             timeout=timeout,
             deadline=deadline,
             metadata=metadata,
@@ -202,9 +202,9 @@ class PlanetAdminBase(ServiceBase):
     ) -> "GetOrCreateSectorResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def create_cargo_type(
-        self, create_cargo_type_request: "CreateCargoTypeRequest"
-    ) -> "CreateCargoTypeResponse":
+    async def get_or_create_cargo_type(
+        self, get_or_create_cargo_type_request: "GetOrCreateCargoTypeRequest"
+    ) -> "GetOrCreateCargoTypeResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def create_starship(
@@ -232,12 +232,12 @@ class PlanetAdminBase(ServiceBase):
         response = await self.get_or_create_sector(request)
         await stream.send_message(response)
 
-    async def __rpc_create_cargo_type(
+    async def __rpc_get_or_create_cargo_type(
         self,
-        stream: "grpclib.server.Stream[CreateCargoTypeRequest, CreateCargoTypeResponse]",
+        stream: "grpclib.server.Stream[GetOrCreateCargoTypeRequest, GetOrCreateCargoTypeResponse]",
     ) -> None:
         request = await stream.recv_message()
-        response = await self.create_cargo_type(request)
+        response = await self.get_or_create_cargo_type(request)
         await stream.send_message(response)
 
     async def __rpc_create_starship(
@@ -270,11 +270,11 @@ class PlanetAdminBase(ServiceBase):
                 GetOrCreateSectorRequest,
                 GetOrCreateSectorResponse,
             ),
-            "/co.za.planet.PlanetAdmin/CreateCargoType": grpclib.const.Handler(
-                self.__rpc_create_cargo_type,
+            "/co.za.planet.PlanetAdmin/GetOrCreateCargoType": grpclib.const.Handler(
+                self.__rpc_get_or_create_cargo_type,
                 grpclib.const.Cardinality.UNARY_UNARY,
-                CreateCargoTypeRequest,
-                CreateCargoTypeResponse,
+                GetOrCreateCargoTypeRequest,
+                GetOrCreateCargoTypeResponse,
             ),
             "/co.za.planet.PlanetAdmin/CreateStarship": grpclib.const.Handler(
                 self.__rpc_create_starship,
