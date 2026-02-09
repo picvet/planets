@@ -2,7 +2,7 @@ import pytest
 from grpclib.testing import ChannelFor
 
 from src.generated.co.za.planet import (
-    CreateSectorRequest,
+    GetOrCreateSectorRequest,
     PlanetAdminStub,
     StatusCode,
     CreatePlanetRequest,
@@ -25,11 +25,11 @@ async def test_create_planet(planets_service):
         cargo_name = "Cargo 1"
 
         # sector
-        create_sector_empty = await stub.create_sector(CreateSectorRequest())
+        create_sector_empty = await stub.get_or_create_sector(GetOrCreateSectorRequest())
         assert create_sector_empty.message.status_code == StatusCode.VALIDATION_ERROR
         assert create_sector_empty.message.error_fields == {"sector_name": strings.validation_error_required_field}
 
-        create_sector_success = await stub.create_sector(CreateSectorRequest(sector_name=sector_name))
+        create_sector_success = await stub.get_or_create_sector(GetOrCreateSectorRequest(sector_name=sector_name))
         assert create_sector_success.message.status_code == StatusCode.SUCCESS
 
         # cargo type

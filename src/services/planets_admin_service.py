@@ -1,10 +1,5 @@
-from sqlalchemy.exc import IntegrityError
-
-import src.resources.database.models as models
 from src.generated.co.za.planet import (
     PlanetAdminBase,
-    CreateSectorRequest,
-    CreateSectorResponse,
     ResponseMessage,
     StatusCode,
     CreatePlanetRequest,
@@ -15,6 +10,8 @@ from src.generated.co.za.planet import (
     CreateStarshipRequest,
     CreateManifestResponse,
     CreateManifestRequest,
+    GetOrCreateSectorRequest,
+    GetOrCreateSectorResponse,
 )
 from src.resources.database.config import Session
 from src.resources.database.planets_admin_queries import (
@@ -29,10 +26,10 @@ from src.strings import en_za as strings
 
 class PlanetsService(PlanetAdminBase):
 
-    async def create_sector(self, create_sector_request: CreateSectorRequest) -> CreateSectorResponse:
+    async def get_or_create_sector(self, create_sector_request: GetOrCreateSectorRequest) -> GetOrCreateSectorResponse:
         async with Session() as session:
             if not create_sector_request.sector_name:
-                return CreateSectorResponse(
+                return GetOrCreateSectorResponse(
                     message=ResponseMessage(
                         status_code=StatusCode.VALIDATION_ERROR,
                         error_fields={"sector_name": strings.validation_error_required_field},
@@ -44,7 +41,7 @@ class PlanetsService(PlanetAdminBase):
                 sector_name=create_sector_request.sector_name,
             )
 
-            return CreateSectorResponse(
+            return GetOrCreateSectorResponse(
                 message=ResponseMessage(status_code=StatusCode.SUCCESS),
                 sector_id=sector.sector_id,
             )
@@ -175,8 +172,6 @@ class PlanetsService(PlanetAdminBase):
                         status_message=strings.validation_error_invalid_starship_or_cargo_type,
                     ),
                 )
-
-            await session.commit()
 
             return CreateManifestResponse(
                 message=ResponseMessage(status_code=StatusCode.SUCCESS),
