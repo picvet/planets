@@ -79,7 +79,8 @@ async def test_create_planet(planets_service):
                 planet_id=999,
             )
         )
-        assert create_starship_error_response.message.status_code == StatusCode.INTERNAL_ERROR
+        assert create_starship_error_response.message.status_code == StatusCode.NOT_FOUND
+        assert create_starship_error_response.message.status_message == strings.validation_error_planet_id_does_not_exist
 
         create_starship_success_response = await stub.create_starship(
             CreateStarshipRequest(
@@ -94,6 +95,15 @@ async def test_create_planet(planets_service):
         create_empty_manifest_response = await stub.create_manifest(CreateManifestRequest())
         assert create_empty_manifest_response.message.status_code == StatusCode.VALIDATION_ERROR
 
+        create_manifest_error_response = await stub.create_manifest(
+            CreateManifestRequest(
+                starship_id=create_starship_success_response.starship_id,
+                cargo_type_id=999,
+                quantity=5,
+            )
+        )
+        assert create_manifest_error_response.message.status_code == StatusCode.NOT_FOUND
+
         create_manifest_success_response = await stub.create_manifest(
             CreateManifestRequest(
                 starship_id=create_starship_success_response.starship_id,
@@ -101,4 +111,4 @@ async def test_create_planet(planets_service):
                 quantity=5,
             )
         )
-        print(f"create manifest success: {create_manifest_success_response}")
+        assert create_manifest_success_response.message.status_code == StatusCode.SUCCESS

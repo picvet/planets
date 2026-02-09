@@ -1,3 +1,5 @@
+from sqlalchemy.exc import IntegrityError
+
 import src.resources.database.models as models
 from src.generated.co.za.planet import (
     PlanetAdminBase,
@@ -15,7 +17,13 @@ from src.generated.co.za.planet import (
     CreateManifestRequest,
 )
 from src.resources.database.config import Session
-from src.resources.database.planets_admin_queries import create_planet_db, create_starship_db, create_manifest_db
+from src.resources.database.planets_admin_queries import (
+    create_planet_db,
+    create_starship_db,
+    create_manifest_db,
+    create_cargo_db,
+    create_sector_db,
+)
 from src.strings import en_za as strings
 
 
@@ -31,9 +39,10 @@ class PlanetsService(PlanetAdminBase):
                     ),
                 )
 
-            sector = models.Sector(name=create_sector_request.sector_name)
-            session.add(sector)
-            await session.commit()
+            sector = await create_sector_db(
+                session=session,
+                sector_name=create_sector_request.sector_name,
+            )
 
             return CreateSectorResponse(
                 message=ResponseMessage(status_code=StatusCode.SUCCESS),
@@ -63,7 +72,6 @@ class PlanetsService(PlanetAdminBase):
                 sector_id=create_planet_request.sector_id,
                 scarce_cargo_id=create_planet_request.scarce_cargo_id,
             )
-            await session.commit()
 
             if not planet:
                 return CreatePlanetResponse(message=ResponseMessage(status_code=StatusCode.INTERNAL_ERROR))
@@ -86,11 +94,15 @@ class PlanetsService(PlanetAdminBase):
                     ),
                 )
 
-            cargo = models.CargoType(name=create_cargo_type_request.cargo_name)
-            session.add(cargo)
-            await session.commit()
+            cargo = await create_cargo_db(
+                session=session,
+                cargo_name=create_cargo_type_request.cargo_name,
+            )
+
             return CreateCargoTypeResponse(
-                message=ResponseMessage(status_code=StatusCode.SUCCESS),
+                message=ResponseMessage(
+                    status_code=StatusCode.SUCCESS,
+                ),
                 cargo_type_id=cargo.cargo_type_id,
             )
 
@@ -118,7 +130,12 @@ class PlanetsService(PlanetAdminBase):
             )
 
             if not starship:
-                return CreateStarshipResponse(message=ResponseMessage(status_code=StatusCode.INTERNAL_ERROR))
+                return CreateStarshipResponse(
+                    message=ResponseMessage(
+                        status_code=StatusCode.NOT_FOUND,
+                        status_message=strings.validation_error_planet_id_does_not_exist,
+                    ),
+                )
 
             return CreateStarshipResponse(
                 message=ResponseMessage(status_code=StatusCode.SUCCESS),
@@ -141,7 +158,7 @@ class PlanetsService(PlanetAdminBase):
                     message=ResponseMessage(
                         status_code=StatusCode.VALIDATION_ERROR,
                         error_fields=errors,
-                    )
+                    ),
                 )
 
             manifest = await create_manifest_db(
@@ -156,7 +173,7 @@ class PlanetsService(PlanetAdminBase):
                     message=ResponseMessage(
                         status_code=StatusCode.NOT_FOUND,
                         status_message=strings.validation_error_invalid_starship_or_cargo_type,
-                    )
+                    ),
                 )
 
             await session.commit()
