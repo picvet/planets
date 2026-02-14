@@ -7,8 +7,9 @@ from src.generated.co.za.planet import (
     StatusCode,
     CreatePlanetRequest,
     CreateStarshipRequest,
-    CreateManifestRequest,
     BulkCreateCargoTypeRequest,
+    BulkCreateManifestRequest,
+    ManifestObject,
 )
 from src.strings import en_za as strings
 
@@ -91,23 +92,36 @@ async def test_create_planet(planets_service):
         assert create_starship_success_response.message.status_code == StatusCode.SUCCESS
 
         # manifest
-        create_empty_manifest_response = await stub.create_manifest(CreateManifestRequest())
+        create_empty_manifest_response = await stub.bulk_create_manifest(BulkCreateManifestRequest())
         assert create_empty_manifest_response.message.status_code == StatusCode.VALIDATION_ERROR
 
-        create_manifest_error_response = await stub.create_manifest(
-            CreateManifestRequest(
-                starship_id=create_starship_success_response.starship_id,
-                cargo_type_id=999,
-                quantity=5,
+        create_manifest_error_response = await stub.bulk_create_manifest(
+            BulkCreateManifestRequest(
+                [
+                    ManifestObject(
+                        starship_id=create_starship_success_response.starship_id,
+                        cargo_type_id=999,
+                        quantity=5,
+                    ),
+                ]
             )
         )
         assert create_manifest_error_response.message.status_code == StatusCode.NOT_FOUND
 
-        create_manifest_success_response = await stub.create_manifest(
-            CreateManifestRequest(
-                starship_id=create_starship_success_response.starship_id,
-                cargo_type_id=create_cargo_type_success.cargo_type_ids[0],
-                quantity=5,
+        create_manifest_success_response = await stub.bulk_create_manifest(
+            BulkCreateManifestRequest(
+                [
+                    ManifestObject(
+                        starship_id=create_starship_success_response.starship_id,
+                        cargo_type_id=create_cargo_type_success.cargo_type_ids[0],
+                        quantity=5,
+                    ),
+                    ManifestObject(
+                        starship_id=create_starship_success_response.starship_id,
+                        cargo_type_id=create_cargo_type_success.cargo_type_ids[1],
+                        quantity=20,
+                    ),
+                ]
             )
         )
         assert create_manifest_success_response.message.status_code == StatusCode.SUCCESS

@@ -2,9 +2,11 @@ from typing import Optional, Sequence
 
 from sqlalchemy import select, insert, literal
 from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import src.resources.database.models as models
+import src.generated.co.za.planet as proto
 
 
 async def create_planet_db(
@@ -95,46 +97,35 @@ async def create_starship_db(
     return result.scalar_one_or_none()
 
 
-async def create_manifest_db(
+async def bulk_create_manifest(
     session: AsyncSession,
-    quantity: int,
-    starship_id: int,
-    cargo_type_id: int,
-) -> Optional[models.Manifest]:
+    manifests: list[proto.ManifestObject],
+) -> Sequence[models.Manifest]:
 
-    exists_cte = (
-        select(
-            literal(starship_id).label("starship_id"),
-            literal(cargo_type_id).label("cargo_type_id"),
-            literal(quantity).label("quantity"),
-        )
-        .where(
-            select(models.StarShip).where(models.StarShip.starship_id == starship_id).exists(),
-            select(models.CargoType).where(models.CargoType.cargo_type_id == cargo_type_id).exists(),
-        )
-        .cte("exists_cte")
-    )
+    values = [
+        {
+            "starship_id": m.starship_id,
+            "cargo_type_id": m.cargo_type_id,
+            "quantity": m.quantity,
+        }
+        for m in manifests
+    ]
 
-    insert_stmt = (
-        pg_insert(models.Manifest)
-        .from_select(
-            ["starship_id", "cargo_type_id", "quantity"],
-            select(
-                exists_cte.c.starship_id,
-                exists_cte.c.cargo_type_id,
-                exists_cte.c.quantity,
-            ),
-        )
-        .on_conflict_do_update(
-            constraint="uq_manifest_starship_cargo",
-            set_={
-                "quantity": models.Manifest.quantity + quantity,
-            },
-        )
-        .returning(models.Manifest)
-    )
+    if not values:
+        return []
 
-    result = await session.execute(insert_stmt)
-    await session.commit()
+    insert_stmt = pg_insert(models.Manifest).values(values)
 
-    return result.scalar_one_or_none()
+    upsert_stmt = insert_stmt.on_conflict_do_update(
+        constraint="uq_manifest_starship_cargo",
+        set_={"quantity": models.Manifest.quantity + insert_stmt.excluded.quantity},
+    ).returning(models.Manifest)
+
+    try:
+        result = await session.execute(upsert_stmt)
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        return []
+
+    return result.scalars().all()

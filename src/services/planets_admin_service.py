@@ -6,18 +6,18 @@ from src.generated.co.za.planet import (
     CreatePlanetResponse,
     CreateStarshipResponse,
     CreateStarshipRequest,
-    CreateManifestResponse,
-    CreateManifestRequest,
     GetOrCreateSectorRequest,
     GetOrCreateSectorResponse,
     BulkCreateCargoTypeResponse,
     BulkCreateCargoTypeRequest,
+    BulkCreateManifestResponse,
+    BulkCreateManifestRequest,
 )
 from src.resources.database.config import Session
 from src.resources.database.planets_admin_queries import (
     create_planet_db,
     create_starship_db,
-    create_manifest_db,
+    bulk_create_manifest,
     bulk_create_cargo_type,
     get_or_create_sector_db,
 )
@@ -138,41 +138,34 @@ class PlanetsService(PlanetAdminBase):
                 starship_id=starship.starship_id,
             )
 
-    async def create_manifest(self, create_manifest_request: "CreateManifestRequest") -> "CreateManifestResponse":
+    async def bulk_create_manifest(self, bulk_create_manifest_request: "BulkCreateManifestRequest") -> "BulkCreateManifestResponse":
         async with Session() as session:
             errors = {}
-
-            if not create_manifest_request.cargo_type_id:
-                errors["cargo_type_id"] = strings.validation_error_required_field
-            if not create_manifest_request.quantity:
-                errors["quantity"] = strings.validation_error_required_field
-            if not create_manifest_request.starship_id:
-                errors["starship_id"] = strings.validation_error_required_field
+            if not bulk_create_manifest_request.manifests:
+                errors["manifests"] = strings.validation_error_required_field
 
             if errors:
-                return CreateManifestResponse(
+                return BulkCreateManifestResponse(
                     message=ResponseMessage(
                         status_code=StatusCode.VALIDATION_ERROR,
                         error_fields=errors,
                     ),
                 )
 
-            manifest = await create_manifest_db(
+            manifest = await bulk_create_manifest(
                 session=session,
-                quantity=create_manifest_request.quantity,
-                starship_id=create_manifest_request.starship_id,
-                cargo_type_id=create_manifest_request.cargo_type_id,
+                manifests=bulk_create_manifest_request.manifests,
             )
 
             if not manifest:
-                return CreateManifestResponse(
+                return BulkCreateManifestResponse(
                     message=ResponseMessage(
                         status_code=StatusCode.NOT_FOUND,
                         status_message=strings.validation_error_invalid_starship_or_cargo_type,
                     ),
                 )
 
-            return CreateManifestResponse(
+            return BulkCreateManifestResponse(
                 message=ResponseMessage(status_code=StatusCode.SUCCESS),
-                manifest_id=manifest.manifest_id,
+                manifest_id=[m.manifest_id for m in manifest],
             )

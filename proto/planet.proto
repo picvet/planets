@@ -11,7 +11,7 @@ service PlanetAdmin {
 
   rpc CreateStarship (CreateStarshipRequest) returns (CreateStarshipResponse);
 
-  rpc CreateManifest (CreateManifestRequest) returns (CreateManifestResponse);
+  rpc BulkCreateManifest (BulkCreateManifestRequest) returns (BulkCreateManifestResponse);
 }
 
 enum StatusCode {
@@ -66,13 +66,17 @@ message CreateStarshipResponse {
   int64 starship_id = 2;
 }
 
-message CreateManifestRequest {
-  int64 quantity = 1;
+message ManifestObject {
   int64 starship_id = 2;
   int64 cargo_type_id = 3;
+  int64 quantity = 1;
 }
 
-message CreateManifestResponse {
+message BulkCreateManifestRequest {
+  repeated ManifestObject manifests = 1;
+}
+
+message BulkCreateManifestResponse {
   ResponseMessage message = 1;
-  int64 manifest_id = 2;
+  repeated int64 manifest_id = 2;
 }

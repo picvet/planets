@@ -88,16 +88,21 @@ class CreateStarshipResponse(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
-class CreateManifestRequest(betterproto.Message):
-    quantity: int = betterproto.int64_field(1)
+class ManifestObject(betterproto.Message):
     starship_id: int = betterproto.int64_field(2)
     cargo_type_id: int = betterproto.int64_field(3)
+    quantity: int = betterproto.int64_field(1)
 
 
 @dataclass(eq=False, repr=False)
-class CreateManifestResponse(betterproto.Message):
+class BulkCreateManifestRequest(betterproto.Message):
+    manifests: List["ManifestObject"] = betterproto.message_field(1)
+
+
+@dataclass(eq=False, repr=False)
+class BulkCreateManifestResponse(betterproto.Message):
     message: "ResponseMessage" = betterproto.message_field(1)
-    manifest_id: int = betterproto.int64_field(2)
+    manifest_id: List[int] = betterproto.int64_field(2)
 
 
 class PlanetAdminStub(betterproto.ServiceStub):
@@ -169,18 +174,18 @@ class PlanetAdminStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
-    async def create_manifest(
+    async def bulk_create_manifest(
         self,
-        create_manifest_request: "CreateManifestRequest",
+        bulk_create_manifest_request: "BulkCreateManifestRequest",
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
         metadata: Optional["MetadataLike"] = None
-    ) -> "CreateManifestResponse":
+    ) -> "BulkCreateManifestResponse":
         return await self._unary_unary(
-            "/co.za.planet.PlanetAdmin/CreateManifest",
-            create_manifest_request,
-            CreateManifestResponse,
+            "/co.za.planet.PlanetAdmin/BulkCreateManifest",
+            bulk_create_manifest_request,
+            BulkCreateManifestResponse,
             timeout=timeout,
             deadline=deadline,
             metadata=metadata,
@@ -209,9 +214,9 @@ class PlanetAdminBase(ServiceBase):
     ) -> "CreateStarshipResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def create_manifest(
-        self, create_manifest_request: "CreateManifestRequest"
-    ) -> "CreateManifestResponse":
+    async def bulk_create_manifest(
+        self, bulk_create_manifest_request: "BulkCreateManifestRequest"
+    ) -> "BulkCreateManifestResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_create_planet(
@@ -245,12 +250,12 @@ class PlanetAdminBase(ServiceBase):
         response = await self.create_starship(request)
         await stream.send_message(response)
 
-    async def __rpc_create_manifest(
+    async def __rpc_bulk_create_manifest(
         self,
-        stream: "grpclib.server.Stream[CreateManifestRequest, CreateManifestResponse]",
+        stream: "grpclib.server.Stream[BulkCreateManifestRequest, BulkCreateManifestResponse]",
     ) -> None:
         request = await stream.recv_message()
-        response = await self.create_manifest(request)
+        response = await self.bulk_create_manifest(request)
         await stream.send_message(response)
 
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
@@ -279,10 +284,10 @@ class PlanetAdminBase(ServiceBase):
                 CreateStarshipRequest,
                 CreateStarshipResponse,
             ),
-            "/co.za.planet.PlanetAdmin/CreateManifest": grpclib.const.Handler(
-                self.__rpc_create_manifest,
+            "/co.za.planet.PlanetAdmin/BulkCreateManifest": grpclib.const.Handler(
+                self.__rpc_bulk_create_manifest,
                 grpclib.const.Cardinality.UNARY_UNARY,
-                CreateManifestRequest,
-                CreateManifestResponse,
+                BulkCreateManifestRequest,
+                BulkCreateManifestResponse,
             ),
         }
