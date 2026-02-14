@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     Dict,
+    List,
     Optional,
 )
 
@@ -63,14 +64,14 @@ class GetOrCreateSectorResponse(betterproto.Message):
 
 
 @dataclass(eq=False, repr=False)
-class GetOrCreateCargoTypeRequest(betterproto.Message):
-    cargo_name: str = betterproto.string_field(1)
+class BulkCreateCargoTypeRequest(betterproto.Message):
+    cargo_names: List[str] = betterproto.string_field(1)
 
 
 @dataclass(eq=False, repr=False)
-class GetOrCreateCargoTypeResponse(betterproto.Message):
+class BulkCreateCargoTypeResponse(betterproto.Message):
     message: "ResponseMessage" = betterproto.message_field(1)
-    cargo_type_id: int = betterproto.int64_field(2)
+    cargo_type_ids: List[int] = betterproto.int64_field(2)
 
 
 @dataclass(eq=False, repr=False)
@@ -134,18 +135,18 @@ class PlanetAdminStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
-    async def get_or_create_cargo_type(
+    async def bulk_create_cargo_type(
         self,
-        get_or_create_cargo_type_request: "GetOrCreateCargoTypeRequest",
+        bulk_create_cargo_type_request: "BulkCreateCargoTypeRequest",
         *,
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
         metadata: Optional["MetadataLike"] = None
-    ) -> "GetOrCreateCargoTypeResponse":
+    ) -> "BulkCreateCargoTypeResponse":
         return await self._unary_unary(
-            "/co.za.planet.PlanetAdmin/GetOrCreateCargoType",
-            get_or_create_cargo_type_request,
-            GetOrCreateCargoTypeResponse,
+            "/co.za.planet.PlanetAdmin/BulkCreateCargoType",
+            bulk_create_cargo_type_request,
+            BulkCreateCargoTypeResponse,
             timeout=timeout,
             deadline=deadline,
             metadata=metadata,
@@ -198,9 +199,9 @@ class PlanetAdminBase(ServiceBase):
     ) -> "GetOrCreateSectorResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_or_create_cargo_type(
-        self, get_or_create_cargo_type_request: "GetOrCreateCargoTypeRequest"
-    ) -> "GetOrCreateCargoTypeResponse":
+    async def bulk_create_cargo_type(
+        self, bulk_create_cargo_type_request: "BulkCreateCargoTypeRequest"
+    ) -> "BulkCreateCargoTypeResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def create_starship(
@@ -228,12 +229,12 @@ class PlanetAdminBase(ServiceBase):
         response = await self.get_or_create_sector(request)
         await stream.send_message(response)
 
-    async def __rpc_get_or_create_cargo_type(
+    async def __rpc_bulk_create_cargo_type(
         self,
-        stream: "grpclib.server.Stream[GetOrCreateCargoTypeRequest, GetOrCreateCargoTypeResponse]",
+        stream: "grpclib.server.Stream[BulkCreateCargoTypeRequest, BulkCreateCargoTypeResponse]",
     ) -> None:
         request = await stream.recv_message()
-        response = await self.get_or_create_cargo_type(request)
+        response = await self.bulk_create_cargo_type(request)
         await stream.send_message(response)
 
     async def __rpc_create_starship(
@@ -266,11 +267,11 @@ class PlanetAdminBase(ServiceBase):
                 GetOrCreateSectorRequest,
                 GetOrCreateSectorResponse,
             ),
-            "/co.za.planet.PlanetAdmin/GetOrCreateCargoType": grpclib.const.Handler(
-                self.__rpc_get_or_create_cargo_type,
+            "/co.za.planet.PlanetAdmin/BulkCreateCargoType": grpclib.const.Handler(
+                self.__rpc_bulk_create_cargo_type,
                 grpclib.const.Cardinality.UNARY_UNARY,
-                GetOrCreateCargoTypeRequest,
-                GetOrCreateCargoTypeResponse,
+                BulkCreateCargoTypeRequest,
+                BulkCreateCargoTypeResponse,
             ),
             "/co.za.planet.PlanetAdmin/CreateStarship": grpclib.const.Handler(
                 self.__rpc_create_starship,

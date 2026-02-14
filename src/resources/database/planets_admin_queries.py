@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Sequence
 
 from sqlalchemy import select, insert, literal
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -52,24 +52,21 @@ async def get_or_create_sector_db(
     return result.scalar_one()
 
 
-async def get_or_create_cargo_db(
+async def bulk_create_cargo_type(
     session: AsyncSession,
-    cargo_name: str,
-) -> models.CargoType:
+    cargo_names: list[str],
+) -> Sequence[models.CargoType]:
+    names_to_insert = [{"name": name} for name in cargo_names]
 
-    insert_stmt = (
-        pg_insert(models.CargoType)
-        .values(name=cargo_name)
-        .on_conflict_do_update(
-            index_elements=[models.CargoType.name],
-            set_={"name": cargo_name},
-        )
-        .returning(models.CargoType)
-    )
+    insert_stmt = pg_insert(models.CargoType).values(names_to_insert)
 
-    result = await session.execute(insert_stmt)
+    upsert_stmt = insert_stmt.on_conflict_do_nothing(
+        index_elements=[models.CargoType.name],
+    ).returning(models.CargoType)
+
+    result = await session.execute(upsert_stmt)
     await session.commit()
-    return result.scalar_one()
+    return result.scalars().all()
 
 
 async def create_starship_db(

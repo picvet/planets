@@ -4,21 +4,21 @@ from src.generated.co.za.planet import (
     StatusCode,
     CreatePlanetRequest,
     CreatePlanetResponse,
-    GetOrCreateCargoTypeResponse,
-    GetOrCreateCargoTypeRequest,
     CreateStarshipResponse,
     CreateStarshipRequest,
     CreateManifestResponse,
     CreateManifestRequest,
     GetOrCreateSectorRequest,
     GetOrCreateSectorResponse,
+    BulkCreateCargoTypeResponse,
+    BulkCreateCargoTypeRequest,
 )
 from src.resources.database.config import Session
 from src.resources.database.planets_admin_queries import (
     create_planet_db,
     create_starship_db,
     create_manifest_db,
-    get_or_create_cargo_db,
+    bulk_create_cargo_type,
     get_or_create_sector_db,
 )
 from src.strings import en_za as strings
@@ -77,29 +77,29 @@ class PlanetsService(PlanetAdminBase):
                 planet_id=planet.planet_id,
             )
 
-    async def get_or_create_cargo_type(
-        self,
-        create_cargo_type_request: "GetOrCreateCargoTypeRequest",
-    ) -> "GetOrCreateCargoTypeResponse":
+    async def bulk_create_cargo_type(self, bulk_create_cargo_type_request: "BulkCreateCargoTypeRequest") -> "BulkCreateCargoTypeResponse":
         async with Session() as session:
-            if not create_cargo_type_request.cargo_name:
-                return GetOrCreateCargoTypeResponse(
+            if not bulk_create_cargo_type_request.cargo_names:
+                return BulkCreateCargoTypeResponse(
                     message=ResponseMessage(
                         status_code=StatusCode.VALIDATION_ERROR,
-                        error_fields={"cargo_name": strings.validation_error_required_field},
+                        error_fields={"cargo_names": strings.validation_error_required_field},
                     ),
                 )
 
-            cargo = await get_or_create_cargo_db(
+            cargos = await bulk_create_cargo_type(
                 session=session,
-                cargo_name=create_cargo_type_request.cargo_name,
+                cargo_names=bulk_create_cargo_type_request.cargo_names,
             )
 
-            return GetOrCreateCargoTypeResponse(
+            if not cargos:
+                return BulkCreateCargoTypeResponse(message=ResponseMessage(status_code=StatusCode.ALREADY_EXISTS))
+
+            return BulkCreateCargoTypeResponse(
                 message=ResponseMessage(
                     status_code=StatusCode.SUCCESS,
                 ),
-                cargo_type_id=cargo.cargo_type_id,
+                cargo_type_ids=[c.cargo_type_id for c in cargos],
             )
 
     async def create_starship(self, create_starship_request: "CreateStarshipRequest") -> "CreateStarshipResponse":
