@@ -105,6 +105,17 @@ class BulkCreateManifestResponse(betterproto.Message):
     manifest_id: List[int] = betterproto.int64_field(2)
 
 
+@dataclass(eq=False, repr=False)
+class MoveStarshipRequest(betterproto.Message):
+    starship_id: int = betterproto.int64_field(1)
+    planet_id: int = betterproto.int64_field(2)
+
+
+@dataclass(eq=False, repr=False)
+class MoveStarshipResponse(betterproto.Message):
+    message: "ResponseMessage" = betterproto.message_field(1)
+
+
 class PlanetAdminStub(betterproto.ServiceStub):
     async def create_planet(
         self,
@@ -186,6 +197,25 @@ class PlanetAdminStub(betterproto.ServiceStub):
             "/co.za.planet.PlanetAdmin/BulkCreateManifest",
             bulk_create_manifest_request,
             BulkCreateManifestResponse,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
+
+class PlanetUserStub(betterproto.ServiceStub):
+    async def move_starship(
+        self,
+        move_starship_request: "MoveStarshipRequest",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "MoveStarshipResponse":
+        return await self._unary_unary(
+            "/co.za.planet.PlanetUser/MoveStarship",
+            move_starship_request,
+            MoveStarshipResponse,
             timeout=timeout,
             deadline=deadline,
             metadata=metadata,
@@ -289,5 +319,30 @@ class PlanetAdminBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 BulkCreateManifestRequest,
                 BulkCreateManifestResponse,
+            ),
+        }
+
+
+class PlanetUserBase(ServiceBase):
+
+    async def move_starship(
+        self, move_starship_request: "MoveStarshipRequest"
+    ) -> "MoveStarshipResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def __rpc_move_starship(
+        self, stream: "grpclib.server.Stream[MoveStarshipRequest, MoveStarshipResponse]"
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.move_starship(request)
+        await stream.send_message(response)
+
+    def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
+        return {
+            "/co.za.planet.PlanetUser/MoveStarship": grpclib.const.Handler(
+                self.__rpc_move_starship,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                MoveStarshipRequest,
+                MoveStarshipResponse,
             ),
         }
